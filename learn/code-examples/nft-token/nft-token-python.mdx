@@ -1,0 +1,140 @@
+---
+title: NFT and Tokens Code Examples in Python
+author: "Sunrit Jana and Pratham Prasoon"
+authorAvatar: ""
+authorTwitter: ""
+summary: "Easy copy and paste snippets to use thirdweb NFT module in Python"
+date: "2021-16-01"
+---
+
+### Mint a NFT.
+
+```python
+# The NFT module address received after initializing the NFT module on the dashboard.
+nft_module_address = "[CONTRACT_ADDRESS]"
+
+# Initialize the NFT module with the contract address.
+nft = sdk.get_nft_module(nft_module_address)
+
+def mint_nft():
+    nft_obj = MintArg(
+        name="Thirdweb",
+        description="This NFT is minted using Thirdweb.",
+        image="ipfs/<YOUR_IPFS_FOLDER_CID>/1.png",
+        properties={}
+    )
+
+    # Mint NFTs.
+    print(nft.mint(nft_obj))
+```
+
+### Mint a NFT to an address.
+
+```python
+# The NFT module address received after initializing the NFT module on the dashboard.
+nft_module_address = "[CONTRACT_ADDRESS]"
+
+# Initialize the NFT module with the contract address.
+nft = sdk.get_nft_module(nft_module_address)
+
+def mint_nft_to_address():
+    account_address = "[ACCOUNT ADDRESS]"
+
+    nft_obj = MintArg(
+        name="Thirdweb",
+        description="This NFT is minted using Thirdweb.",
+        image="ipfs/<YOUR_IPFS_FOLDER_CID>/1.png",
+        properties={}
+    )
+
+    # Mint NFTs.
+    print(nft.mint_to(account_address, nft_obj))
+```
+
+### Mint a batch of NFTs.
+
+```python
+# The NFT module address received after initializing the NFT module on the dashboard.
+nft_module_address = "[CONTRACT_ADDRESS]"
+
+# Initialize the NFT module with the contract address.
+nft = sdk.get_nft_module(nft_module_address)
+
+def mint_nft_batch():
+    nft_batch = [
+        MintArg(
+            name="Thirdweb #1",
+            description="This NFT is minted using Thirdweb.",
+            image="ipfs/<YOUR_IPFS_FOLDER_CID>/1.png",
+            properties={}
+        ),
+        MintArg(
+            name="Thirdweb #2",
+            description="This NFT is minted using Thirdweb.",
+            image="ipfs/<YOUR_IPFS_FOLDER_CID>/2.png",
+            properties={}
+        )
+    ]
+
+    # Mint NFTs.
+    print(nft.mint_batch(nft_batch))
+```
+
+### Mint a batch of NFTs to a specific address.
+
+```python
+# The NFT module address received after initializing the NFT module on the dashboard.
+nft_module_address = "[CONTRACT_ADDRESS]"
+
+# Initialize the NFT module with the contract address.
+nft = sdk.get_nft_module(nft_module_address)
+
+def mint_nft_batch_to_address():
+    account_address = "[ACCOUNT_ADDRESS]"
+
+    nft_batch = [
+        MintArg(
+            name="Thirdweb #1",
+            description="This NFT is minted using Thirdweb.",
+            image="ipfs/<YOUR_IPFS_FOLDER_CID>/1.png",
+            properties={}
+        ),
+        MintArg(
+            name="Thirdweb #2",
+            description="This NFT is minted using Thirdweb.",
+            image="ipfs/<YOUR_IPFS_FOLDER_CID>/2.png",
+            properties={}
+        )
+    ]
+
+    # Mint NFTs.
+    print(nft.mint_batch_to(account_address, nft_batch))
+```
+
+### Mint tokens.
+
+```python
+# The currency module address received after initializing the currency module on the dashboard.
+currency_module_address = "[CONTRACT_ADDRESS]"
+
+# Initialize the currency module with the contract address.
+currency = sdk.get_currency_module(currency_module_address)
+
+def mint_tokens():
+    currency.mint(100)  # Mint 100 tokens.
+```
+
+### Mint tokens to a specific address
+
+```python
+# The currency module address received after initializing the currency module on the dashboard.
+currency_module_address = "[CONTRACT_ADDRESS]"
+
+# Initialize the currency module with the contract address.
+currency = sdk.get_currency_module(currency_module_address)
+
+def mint_tokens():
+    account_address = "[ACCOUNT_ADDRESS]"
+
+    currency.mint_to(account_address, 100)  # Mint 100 tokens to the account address.
+```
