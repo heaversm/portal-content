@@ -1,0 +1,379 @@
+---
+title: How file uploads work in thirdweb
+author: "Pratham Prasoon & Sunrit Jana"
+authorAvatar: "/assets/portal/authors/pratham-prasoon.jpg"
+authorTwitter: "https://twitter.com/PrasoonPratham"
+draft: false
+tags: [python, typescript, basics]
+summary: "Understand how the thirdweb sdk handles file uploads"
+image: "./thumbnail.png"
+date: "2022-02-01"
+updated: ""
+---
+
+## Introduction
+
+There are several ways to upload images via the thirdweb SDK for minting NFTs, in this guide we will go over them in detail and how they work, more specifically using the TypeScript SDK and the Python SDK.
+
+File uploads are the heart and soul for working with thirdweb modules, especially when you mint your shiny new NFTs. The awesome part is thirdweb provides you with flexible choices to upload files and get your NFTs and stuff, minted on to the blockchain!
+
+We'll cover all the ways in which we can do it, with details along with implementation and all the info you want to know about it, with both Python and Typescript, let's go! 🔥
+
+The SDK gives us four ways to upload the images. They being,
+
+- Option 1: Local file stored on your computer.
+- Option 2: A file upload form.
+- Option 3: IPFS CID — short for ['InterPlanetary file system'.](https://docs.ipfs.io/concepts/what-is-ipfs/)
+
+You can upload JPEGs, PNGs, GIFs, and other common image formats. In fact you can upload _any_ file that you like, audio, video, html, text, pdf, and 3d model files.
+
+Let's go through each option in detail.
+
+## 1. Local file stored on your computer
+
+This is a nifty way to upload images to the Thirdweb SDK, by passing the image file, thirdweb will take care of uploading to IPFS behind the scenes, and mint the NFT out of it.
+
+Here is how you can do it in TypeScript:
+
+```tsx
+// Imports.
+import { readFileSync } from "fs";
+
+// Initializing the SDK
+...
+
+// Get the module
+const nftCollection = sdk.getNFTModule("<NFT_COLLECTION_MODULE_ADDRESS>");
+
+// Load the file "logo.png".
+const image = readFileSync("logo.png");
+
+// Minting the NFT asynchronously
+async function mint() {
+  await nftCollection.mint({
+    name: "NFT 🖼️",
+    description: "Description of the NFT",
+    image,
+    properties: {},
+  }),
+}
+
+// Running the entire thing
+mint();
+```
+
+And, Here is how you can do it in Python:
+
+```python
+# Initializing the SDK
+...
+
+# Importing the image in Python as binary data
+with open('logo.png', 'rb') as binary_data:
+    image = binary_data
+
+# Define the variables for minting the NFT.
+name_nft = "NFT 🖼️"
+description_nft = "NFT EXAMPLE"
+image_nft = image
+prop = {}
+
+nft_collection_module.mint(MintArg(
+    name=name_nft,
+    description=description_nft,
+    image=image_nft,
+    properties=prop
+))
+```
+
+## 2. File Upload Form
+
+This is an interactive way to allow different users to mint NFTs through an intuitive UI. The workflow to allow users to mint NFTs this way usually is,
+
+- Connect to their wallet for transactions.
+- Enter the details for the NFT (Title, Description and the image for NFT).
+- And, finally mint it.
+
+But, the way of handling the input changes. When using Python, the image and the data is passed on to the backend to use the Python SDK for minting, or when minting in Frontend, The Typescript SDK is initialized, and minted directly when form is submitted.
+
+Let's explore both of them, with Typescript and NextJS frontend-only form first. 🔥
+
+Note: In this case, the user pays for the gas in minting the NFT.
+
+### 1. Install dependencies
+
+```bash
+npm install @3rdweb/sdk ethers
+
+npm install @3rdweb/react @3rdweb/hooks
+```
+
+### 2. Create the form with Thirdweb SDK.
+
+> Note: We are keeping the form as simple as uploading image here, and maintaining same NFT name and description. You can configure and tweak with it, as you like.
+
+```tsx
+import { useWeb3 } from "@3rdweb/hooks";
+import { ThirdwebSDK } from "@3rdweb/sdk";
+import { useState } from "react";
+
+const FrontendForm = () => {
+  // Define state for image.
+  const [image, setImage] = useState(null);
+
+  // Get the Web3 provider.
+  const { provider } = useWeb3();
+
+  // Initialize the thirdweb SDK
+  const sdk = new ThirdwebSDK(provider?.getSigner());
+
+  // Get the NFT module.
+  const nftCollectionModule = sdk.getNFTModule(
+    "0xD91A8C3Dd5fa4F829A009FCd9C1DDc8417DB78f9",
+  );
+
+  // Function to handle the form submission.
+  const formSubmit = (ev) => {
+    ev.preventDefault();
+
+    // Ensure image is not empty.
+    if (image) {
+      (async () => {
+        console.log(
+          await nftCollectionModule.mint({
+            name: "Thirdweb NFT.",
+            description: "NFT minted using thirdweb!",
+            image,
+            properties: {},
+          }),
+        );
+      })();
+    }
+  };
+
+  return (
+    <div>
+      <form onSubmit={formSubmit}>
+        <input
+          type="file"
+          name="file"
+          id="file"
+          accept="image/png, image/jpeg"
+          onChange={(ev) => setImage(ev.target.files[0])}
+        />
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+  );
+};
+
+export default FrontendForm;
+```
+
+**And, voila! Your easy to use frontend-only minting form is ready ✨**
+
+Now, It's time for some backend work. Let's build the NFT minting app, but instead with a FastAPI backend and Nextjs + Typescript frontend.
+
+In this case, you the developer who setup the dashboard will be paying the gas to mint these NFTs.
+
+**1. Get started by installing dependencies for the project first.**
+
+Python:
+
+```bash
+# Create pipenv environment.
+pipenv install fastapi thirdweb python-decouple
+
+# Enter the environment.
+pipenv shell
+```
+
+Frontend:
+
+```bash
+npm install @3rdweb/react @3rdweb/hooks axios
+```
+
+**2. Create the backend.**
+
+```python
+import os
+
+from decouple import config
+from fastapi import FastAPI, Form, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from thirdweb import ThirdwebSdk, SdkOptions, MintArg
+
+# Define models.
+class MintModel(BaseModel):
+    address: str
+    name: str
+    description: str
+
+# Initialize app and config.
+PRIVATE_KEY = config("PRIVATE_KEY")
+
+app = FastAPI()
+
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Network
+network = "https://rpc-mainnet.maticvigil.com/"
+sdk = ThirdwebSdk(SdkOptions(), network)
+
+# Private Key
+sdk.set_private_key(PRIVATE_KEY)
+
+nft_collection_module_address = "0xD91A8C3Dd5fa4F829A009FCd9C1DDc8417DB78f9"
+nft_collection_module = sdk.get_nft_module(nft_collection_module_address)
+
+# Routes.
+@app.post("/mint")
+async def mint(
+
+    # Getting the data from the form
+     address: str = Form(...),
+     name: str = Form(...),
+     description: str = Form(...),
+     image: UploadFile = Form(...),
+ ):
+
+    # Minting the NFT
+     nft_collection_module.mint_to(
+         address,
+         MintArg(
+             name=name,
+             description=description,
+             image=image.file.read(),
+         )
+     )
+
+     return {"status": "ok"}
+```
+
+**3. Create the frontend form, this is in Nextjs**
+
+```tsx
+import axios from "axios";
+import { useState } from "react";
+
+const FrontendForm = () => {
+  // Define state for image.
+  const [image, setImage] = useState(null);
+  const [address, setAddress] = useState(null);
+
+  // Function to handle the form submission.
+  const formSubmit = (ev) => {
+    ev.preventDefault();
+
+    // Ensure image is not empty.
+    if (image && address) {
+      const form = new FormData();
+      form.append("address", address);
+      form.append("name", "My NFT.");
+      form.append("description", "Thirdweb NFT!");
+      form.append("image", image);
+
+      axios
+        .post("http://localhost:8000/mint", form)
+        .then(function (response) {
+          console.log(response);
+          alert(response.data);
+        })
+        .catch(function (error) {
+          console.log(error);
+          alert(error.data);
+        });
+    }
+  };
+
+  return (
+    <div>
+      <form onSubmit={formSubmit}>
+        <input
+          type="file"
+          name="file"
+          id="file"
+          accept="image/png, image/jpeg"
+          onChange={(ev) => setImage(ev.target.files[0])}
+        />
+        <input
+          type="text"
+          name="address"
+          id="address"
+          onInput={(ev) => setAddress(ev.target.value)}
+        />
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+  );
+};
+
+export default FrontendForm;
+```
+
+## 2. Passing an IPFS URL to the SDK
+
+Another method of passing images to the thirdweb SDK is by passing in the IPFS (InterPlanetary File System) links. These are very similar to images stored imgur, google drive or an AWS S3 bucket except the images are stored on a decentralised protocol which means they are immutable and can never be deleted.
+
+Here's a [web app](https://filenode.co/add) that uploads images to IPFS and it'll give you the link as well once you click on the ‘show info' button after uploading the image. Take note of the String.
+
+`ipfs://<string>` is your IPFS URL that you can pass to the SDK.
+
+![Screenshot of a web app for uploading images to ipfs](./screenshot.png)
+
+This is just one of the many ways of getting your images to IPFS.
+
+Just like before you can pass the IPFS link in the mint function and thirdweb will handle the rest, here's the TypeScript code.
+
+```tsx
+// Initiating the SDK
+...
+
+// Minting the NFT asynchronously
+async function mint() {
+  await nftCollection.mint({
+    name: "NFT 🖼️",
+    description: "Description of the NFT",
+    image: "ipfs://QmbGpe6dJQA9awBbTKEULufp9TTjXw1esVUbZNQrLM57nK",
+    properties: {},
+  }),
+}
+
+// Running the entire thing
+mint();
+```
+
+Here's how you do it in Python.
+
+```python
+# Initializing the SDK
+...
+
+# Define the variables for minting the
+name_nft = "NFT 🖼️"
+description_nft = "NFT EXAMPLE"
+image_nft = "ipfs://QmbGpe6dJQA9awBbTKEULufp9TTjXw1esVUbZNQrLM57nK"
+prop = {}
+
+nft_collection_module.mint(MintArg(
+	name=name_nft,
+  description=description_nft,
+  image=image_nft,
+	properties=prop
+))
+```
+
+## Conclusion
+
+That is it! You now know how to correctly upload image files to the thirdweb Python and TypeScript SDK!
+
+If you can any further questions or suggestions, please feel free to reach out to us on our [Discord sever](https://discord.gg/thirdweb)
