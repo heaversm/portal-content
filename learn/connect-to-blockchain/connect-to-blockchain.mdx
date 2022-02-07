@@ -33,7 +33,7 @@ A `provider` contains the information to tell our sdk which blockchain you want 
 
 **RPC** is a simple form of API interaction and stands for **Remote Procedure Call.** In other words we will use this url to make an API call to the chain.
 
-# Using a read only provider with thirdweb
+### Using a read only provider with thirdweb
 
 The thirdwebs sdk can be used to interact with your modules. To use our sdk to read data from the blockchain we need to create a connection with a `provider`. Then we tell it which blockchain to target via the **RPC** url.
 
@@ -73,7 +73,7 @@ const marketplace = sdk.getMarketplaceModule(marketModuleAddress);
 marketplace.getAllListings();
 ```
 
-# Signer
+## Signer
 
 The `Signer` represents a connection established with a wallet. This connection has access to methods, which prompts the wallet to authorise and **sign** transactions, such as minting an NFT or transferring tokens.
 
@@ -85,7 +85,7 @@ The `Signer` is necessary to authorize transactions. When you mint an NFT or cla
 
 You might have seen this process while using your wallet on any web3 app. You want to buy an NFT or claim a token and then your wallet pops up in your browser to confirm the transaction.
 
-# Connect your users’ wallet with thirdweb
+### Connect your users wallet with thirdweb
 
 A wallet contains sensitive information and you do **not** want this data accessible by anyone except for the owner! At thirdweb we take security extremely seriously. That’s why we developed a connect wallet flow for your users to sign transactions, without their sensitive data being exposed, by obtaining a `Signer`.
 
@@ -97,7 +97,7 @@ Click [here](/portal/guides/add-connectwallet-to-your-website) for a guide on ho
 
 Check out [this](/portal/guides/token-button-react) guide or [this](/portal/guides/claim-button-react) guide to see examples of using `Signer` with the thirdweb sdk.
 
-# Using your own signer with thirdweb
+### Using your own signer with thirdweb
 
 **warning: this method is not suitable for frontend**
 
