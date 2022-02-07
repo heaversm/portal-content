@@ -13,6 +13,7 @@ updated: ""
 
 <CodeToggler 
   javascript={
+<code>
     ```js
 import { ethers } from "ethers";
 
@@ -66,8 +67,10 @@ const tokenModule = sdk.getTokenModule(
   }
 })();
     ```
+</code>
   }
   python={
+<code>
     ```py
 from thirdweb import ThirdwebSdk, SdkOptions, CreatePackArg, AssetAmountPair
 from dotenv import load_dotenv
@@ -95,5 +98,6 @@ pack_module.create(CreatePackArg(
     seconds_until_open_start=0,
 ))
     ```
+</code>
   }
 /> 
