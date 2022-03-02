@@ -154,7 +154,7 @@ Your `index.ts` looks like this, when you instantiate the `sdk` with **private k
 ```tsx
 // Importing libraries
 import { ThirdwebSDK } from "@3rdweb/sdk";
-import { dotenv } from "dotenv";
+import * as dotenv from "dotenv";
 import { ethers } from "ethers";
 
 // getting the private key
